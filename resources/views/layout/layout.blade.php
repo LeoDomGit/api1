@@ -19,6 +19,9 @@
 
     <link href="/dashboard/css/app.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="/dashboard/jquery3x.js"></script>
+    <script src="/dashboard/sweetalert.js"></script>
+
 </head>
 
 <body>
@@ -157,7 +160,7 @@
             </nav>
 
             <main class="content">
-
+                @yield('main')
             </main>
         </div>
     </div>
