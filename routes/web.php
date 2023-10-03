@@ -14,5 +14,4 @@ use App\Http\Controllers\UserControllers;
 */
 
 Route::get('/', [UserControllers::class,'index']);
-Route::post('/roles', [UserControllers::class,'index']);
 

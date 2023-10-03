@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\UserControllers;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,3 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::post('role', [UserControllers::class,'createRole']);
+Route::get('role', [UserControllers::class,'getRoles']);
+Route::post('switchrole', [UserControllers::class,'switchrole']);
+Route::post('editRole', [UserControllers::class,'editRole']);
