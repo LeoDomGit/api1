@@ -17,7 +17,13 @@ use App\Http\Controllers\UserControllers;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+// ==============================================================
 Route::post('role', [UserControllers::class,'createRole']);
 Route::get('role', [UserControllers::class,'getRoles']);
 Route::post('switchrole', [UserControllers::class,'switchrole']);
 Route::post('editRole', [UserControllers::class,'editRole']);
+Route::post('deleteRole', [UserControllers::class,'deleteRole']);
+// ==============================================================
+Route::post('users', [UserControllers::class,'createUser']);
+Route::post('editUser', [UserControllers::class,'editUser']);
+Route::get('users', [UserControllers::class,'getUsers']);

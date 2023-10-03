@@ -4,12 +4,113 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\UserRoleM;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Mail\UserMail;
+use Illuminate\Support\Facades\Hash;
 class UserControllers extends Controller
 {
+    public function getUsers(){
+        $users= DB::Table('users')
+        ->join('role_tbl','users.idRole','=','role_tbl.id')
+        ->select('users.id as id','users.name as name','users.email as email','users.idRole as idRole','users.status as status','role_tbl.name as rolename')
+        ->get();
+        return response()->json($users);
+    }
+       // ===================================================
+
+    public function editUser(Request $request,UserRoleM $UserRoleM, User $User)
+    {
+        $Validator = Validator::make($request->all(), [
+            'id'=>'required|exists:users,id',
+            'username'=>'required',
+            'email'=>'required|email',
+            'idRole'=>'required|exists:role_tbl,id',
+
+        ],[
+            'id.required'=>'Chưa nhận được mã tài khoản',
+            'id.exists'=>'Mã tài khoản không tồn tại',
+            'username.required'=>'Chưa nhận được tên tài khoản',
+            'email.required'=>'Chưa nhận được email tài khoản',
+            'idRole.required'=>'Chưa nhận được loại tài khoản',
+            'idRole.exists'=>'Loại tài khoản không tồn tại',
+            'email.email'=>'Email tài khoản không hợp lệ',
+        ]);
+        if ($Validator->fails()) {
+            return response()->json(['check' => false, 'msg' => $Validator->errors()]);
+        }
+        User::where('id',$request->id)->update(['name'=>$request->username,'email'=>$request->email,'idRole'=>$request->idRole,'created_at'=>now()]);
+        $users= DB::Table('users')
+        ->join('role_tbl','users.idRole','=','role_tbl.id')
+        ->select('users.id as id','users.name as name','users.email as email','users.idRole as idRole','users.status as status','role_tbl.name as rolename')
+        ->get();
+        return response()->json(['check'=>true,'users'=>$users]);
+    }
+    // ===================================================
+
+    public function createUser(Request $request,UserRoleM $UserRoleM, User $User)
+    {
+        $Validator = Validator::make($request->all(), [
+            'username'=>'required',
+            'email'=>'required|email|unique:users,email',
+            'idRole'=>'required|exists:role_tbl,id',
+
+        ],[
+            'username.required'=>'Chưa nhận được tên tài khoản',
+            'email.required'=>'Chưa nhận được email tài khoản',
+            'idRole.required'=>'Chưa nhận được loại tài khoản',
+            'idRole.exists'=>'Loại tài khoản không tồn tại',
+            'email.email'=>'Email tài khoản không hợp lệ',
+            'email.unique'=>'Email tài khoản bị trùng lặp',
+        ]);
+        if ($Validator->fails()) {
+            return response()->json(['check' => false, 'msg' => $Validator->errors()]);
+        }
+        $random_int= random_int(10000,99999); 
+        $password = Hash::make($random_int);
+        User::create(['name'=>$request->username,'password'=>$password,'email'=>$request->email,'idRole'=>$request->idRole,'created_at'=>now()]);
+        $mailData = [
+            'title' => 'Mail thông báo thông tin tài khoản ',
+            'email' => $request->email,
+            'name' => $request->username,
+            'password' => $random_int,
+        ];
+        Mail::to($request->email)->send(new UserMail($mailData));
+        $users= DB::Table('users')
+        ->join('role_tbl','users.idRole','=','role_tbl.id')
+        ->select('users.id as id','users.name as name','users.email as email','users.idRole as idRole','users.status as status','role_tbl.name as rolename')
+        ->get();
+        return response()->json(['check'=>true,'users'=>$users]);
+    }
+    /**
+     * Display a listing of the resource.
+    */
+    public function deleteRole (Request $request,UserRoleM $UserRoleM, User $User)
+    {
+        $Validator = Validator::make($request->all(), [
+            'id'=>'required|exists:role_tbl,id',
+        ],[
+            'id.required'=>'Chưa nhận được mã loại tài khoản',
+            'id.exists'=>'Loại tài khoản không tồn tại',
+        ]);
+        if ($Validator->fails()) {
+            return response()->json(['check' => false, 'msg' => $Validator->errors()]);
+        }
+        $count = User::where('idRole',$request->id)->count('id');
+        if($count!=0){
+            return response()->json(['check'=>false,'msg'=>'Còn tồn tại tài khoản trong loại']);
+        }
+        UserRoleM::where('id',$request->id)->delete();
+        $result = DB::Table('role_tbl')->get();
+        return response()->json(['check'=>true,'roles'=>$result]);
+    }
+    /**
+     * Display a listing of the resource.
+    */
+    
     public function editRole (Request $request,UserRoleM $UserRoleM)
     {
         $Validator = Validator::make($request->all(), [
