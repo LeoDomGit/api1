@@ -13,10 +13,112 @@ use App\Mail\UserMail;
 use Illuminate\Support\Facades\Hash;
 class UserControllers extends Controller
 {
+
+
+    
+    // =================================================
+    public function getTeacher(){
+        $result= DB::Table('users')->join('role_tbl','users.idRole','=','role_tbl.id')
+        ->where('role_tbl.name','=','Teacher')->select('users.*')
+        ->get();
+        return response()->json($result);
+    }
+    // ==================================================
+    public function checkLoginAdmin (Request $request,UserRoleM $UserRoleM, User $User){
+        $Validator = Validator::make($request->all(), [
+            'email'=>'required|email|exists:users,email',
+
+        ],[
+            'email.required'=>'Thiếu email tài khoản',
+            'email.email'=>'Email tài khoản không hợp lệ',
+            'email.exists'=>'Email tài khoản không tồn tại',
+
+        ]);
+        if ($Validator->fails()) {
+            return response()->json(['check' => false, 'msg' => $Validator->errors()]);
+        }
+        $users = DB::Table('users')
+        ->join('role_tbl','users.idRole','=','role_tbl.id')
+        ->where('role_tbl.name','=','admin')->where('users.email',$request->email)->get();
+        if(count($users)>0){
+            return response()->json(['check'=>true]);
+        }
+    }
+    
+    //=====================================================
+
+    public function switchUser(Request $request,UserRoleM $UserRoleM, User $User){
+        $Validator = Validator::make($request->all(), [
+            'id'=>'required|numeric|exists:users,id',
+
+        ],[
+            'id.required'=>'Chưa nhận được mã tài khoản',
+            'id.exists'=>'Mã tài khoản không tồn tại',
+            'id.numeric'=>'Mã tài khoản không hợp lệ',
+        ]);
+        if ($Validator->fails()) {
+            return response()->json(['check' => false, 'msg' => $Validator->errors()]);
+        }
+        $old= User::where('id',$request->id)->value('status');
+        if($old==0){
+            User::where('id',$request->id)->update(['status'=>1,'updated_at'=>now()]);
+        }else{
+            User::where('id',$request->id)->update(['status'=>0,'updated_at'=>now()]);
+        }
+        $users= DB::Table('users')
+        ->join('role_tbl','users.idRole','=','role_tbl.id')
+        ->select('users.id as id','users.name as name','users.email as email','users.status as status','users.idRole as idRole','users.status as status','role_tbl.name as rolename')
+        ->get();
+        return response()->json($users);
+    }
+
+    // ==================================================
+
+    public function checkLogin1 (Request $request,UserRoleM $UserRoleM, User $User){
+        $Validator = Validator::make($request->all(), [
+            'email'=>'required|email|exists:users,email',
+            'password'=>'required',
+
+        ],[
+            'email.required'=>'Chưa nhận được email tài khoản',
+            'idRole.required'=>'Chưa nhận được loại tài khoản',
+            'idRole.exists'=>'Loại tài khoản không tồn tại',
+            'email.email'=>'Email tài khoản không hợp lệ',
+        ]);
+        if ($Validator->fails()) {
+            return response()->json(['check' => false, 'msg' => $Validator->errors()]);
+        }
+    }
+    // ==================================================
+    public function checkLogin (Request $request,UserRoleM $UserRoleM, User $User)
+    {
+        $Validator = Validator::make($request->all(), [
+            'email'=>'required|email|exists:users,email',
+            'password'=>'required',
+
+        ],[
+            'email.required'=>'Chưa nhận được email tài khoản',
+            'idRole.required'=>'Chưa nhận được loại tài khoản',
+            'idRole.exists'=>'Loại tài khoản không tồn tại',
+            'email.email'=>'Email tài khoản không hợp lệ',
+        ]);
+        if ($Validator->fails()) {
+            return response()->json(['check' => false, 'msg' => $Validator->errors()]);
+        }
+        if(Auth::attempt(['email' => $request->email,'status'=>1, 'password' => $request->password, 'status' => 1],true)){
+          $token=Auth::user()->remember_token;
+          return response()->json(['check'=>true,'token'=>$token]);
+        }else{
+          return response()->json(['check'=>false,'msg'=>'Sai tên đăng nhập hoặc mật khẩu']);
+
+        }
+    }
+
+    // ===================================================
     public function getUsers(){
         $users= DB::Table('users')
         ->join('role_tbl','users.idRole','=','role_tbl.id')
-        ->select('users.id as id','users.name as name','users.email as email','users.idRole as idRole','users.status as status','role_tbl.name as rolename')
+        ->select('users.id as id','users.name as name','users.email as email','users.status as status','users.idRole as idRole','users.status as status','role_tbl.name as rolename')
         ->get();
         return response()->json($users);
     }
@@ -45,7 +147,7 @@ class UserControllers extends Controller
         User::where('id',$request->id)->update(['name'=>$request->username,'email'=>$request->email,'idRole'=>$request->idRole,'created_at'=>now()]);
         $users= DB::Table('users')
         ->join('role_tbl','users.idRole','=','role_tbl.id')
-        ->select('users.id as id','users.name as name','users.email as email','users.idRole as idRole','users.status as status','role_tbl.name as rolename')
+        ->select('users.id as id','users.name as name','users.email as email','users.status as status','users.idRole as idRole','users.status as status','role_tbl.name as rolename')
         ->get();
         return response()->json(['check'=>true,'users'=>$users]);
     }
@@ -69,7 +171,7 @@ class UserControllers extends Controller
         if ($Validator->fails()) {
             return response()->json(['check' => false, 'msg' => $Validator->errors()]);
         }
-        $random_int= random_int(10000,99999); 
+        $random_int= 111111; 
         $password = Hash::make($random_int);
         User::create(['name'=>$request->username,'password'=>$password,'email'=>$request->email,'idRole'=>$request->idRole,'created_at'=>now()]);
         $mailData = [
@@ -81,7 +183,7 @@ class UserControllers extends Controller
         Mail::to($request->email)->send(new UserMail($mailData));
         $users= DB::Table('users')
         ->join('role_tbl','users.idRole','=','role_tbl.id')
-        ->select('users.id as id','users.name as name','users.email as email','users.idRole as idRole','users.status as status','role_tbl.name as rolename')
+        ->select('users.id as id','users.name as name','users.status as status','users.email as email','users.idRole as idRole','users.status as status','role_tbl.name as rolename')
         ->get();
         return response()->json(['check'=>true,'users'=>$users]);
     }
