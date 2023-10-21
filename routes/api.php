@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserControllers;
 use App\Http\Controllers\EduController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\BillController;
+use App\Http\Controllers\scheduleControlller;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -69,3 +72,6 @@ Route::get('getSingleCourses/{id}', [CourseController::class,'getSingleCourses']
 Route::get('getCourseCate/{id}', [CourseController::class,'getCourseCate']);
 Route::get('getClass/{id}', [CourseController::class,'getClass']);
 Route::post('getCourseClass', [CourseController::class,'getCourseClass']);
+//====================================================
+Route::post('submitBill', [BillController::class,'store']);
+Route::post('createClass',[scheduleControlller::class,'store']);
