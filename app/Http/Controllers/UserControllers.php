@@ -11,11 +11,45 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Mail\UserMail;
 use Illuminate\Support\Facades\Hash;
+use App\Mail\ContactMail;
 class UserControllers extends Controller
 {
 
 
-    
+    public function sendContact(Request $request){
+        $Validator = Validator::make($request->all(), [
+            'email'=>'required|email',
+            'phone'=>'required|max:10',
+            'subject'=>'required',
+            'message'=>'required',
+            'name'=>'required',
+        ],[
+            'name.required'=>'Thiếu tên người liên hệ',
+            'email.required'=>'Thiếu email liên hệ',
+            'phone.required'=>'Thiếu số điện thoại liên hệ',
+            'subject.required'=>'Thiếu tiêu đề cần yêu cầu',
+            'message.required'=>'Thiếu nội dung yêu cầu',
+            'phone.max'=>'Số điện thoại liên hệ không hợp lệ' ,
+            'email.email'=>'Email liên hệ không hợp lệ',
+            
+
+        ]);
+        if ($Validator->fails()) {
+            return response()->json(['check' => false, 'msg' => $Validator->errors()]);
+        }
+        $mailData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'subject' => $request->subject,
+            'content' => $request->email,
+        ];
+        $users = DB::Table('users')->join('role_tbl','users.idRole','=','role_tbl.id')
+        ->where('role_tbl.name','admin')->first();
+        $email=$users->email;
+        Mail::to($email)->send(new ContactMail($mailData));
+        return response()->json(['check'=>true]);
+    }
     // =================================================
     public function getTeacher(){
         $result= DB::Table('users')->join('role_tbl','users.idRole','=','role_tbl.id')

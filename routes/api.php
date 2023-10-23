@@ -38,6 +38,9 @@ Route::post('checkLogin', [UserControllers::class,'checkLogin']);
 Route::post('checkAdmin', [UserControllers::class,'checkLoginAdmin']);
 Route::get('getTeacher', [UserControllers::class,'getTeacher']);
 
+// ==========================
+Route::post('contact', [UserControllers::class,'sendContact']);
+
 // ==============================================================
 Route::post('createEdu', [EduController::class,'store']);
 Route::get('edu', [EduController::class,'index']);
