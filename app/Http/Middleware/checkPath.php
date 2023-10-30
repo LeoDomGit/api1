@@ -15,6 +15,10 @@ class checkPath
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if(in_array($request->getHost(), ['users.trungthanhweb','dashboard.trungthanhweb','studentsite.trungthanhweb','teacher.trungthanhweb.com']) == false)
+        {
+            return response('', 400);
+        }
         return $next($request);
     }
 }
