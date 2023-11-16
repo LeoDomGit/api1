@@ -7,7 +7,6 @@ use App\Http\Controllers\EduController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\scheduleControlller;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,7 +21,6 @@ use App\Http\Controllers\scheduleControlller;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-// ==============================================================
 Route::post('role', [UserControllers::class,'createRole']);
 Route::get('role', [UserControllers::class,'getRoles']);
 Route::post('switchrole', [UserControllers::class,'switchrole']);

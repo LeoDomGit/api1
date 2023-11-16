@@ -42,12 +42,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-    /**
-     * Get the user associated with the User
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
-    public function userrole(): HasOne
+        public function userrole(): HasOne
     {
         return $this->hasOne(UserRoleM::class);
     }

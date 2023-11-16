@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class scheduleM extends Model
 {
-    protected $table='class_schedule';
+     protected $table='class_schedule';
     protected $fillable=['id','idTeacher','schedules','name','idcourse','duration','pass','created_at','updated_at'];
     use HasFactory;
 }
